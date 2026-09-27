@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Вход — Голосование</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Roboto', Arial, sans-serif;
+    background: #fff; min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: #202124; padding: 20px;
+  }
+  .logo { font-size: 26px; font-weight: 500; margin-bottom: 20px; letter-spacing: -1px; }
+  .logo .b1 { color: #4285f4; } .logo .b2 { color: #ea4335; }
+  .logo .b3 { color: #fbbc05; } .logo .b4 { color: #4285f4; }
+  .logo .b5 { color: #34a853; } .logo .b6 { color: #ea4335; }
+  .card {
+    width: 100%; max-width: 448px;
+    border: 1px solid #dadce0; border-radius: 8px;
+    padding: 36px 24px; text-align: center;
+  }
+  .card h1 { font-size: 22px; font-weight: 400; margin-bottom: 10px; }
+  .card p.sub { font-size: 15px; margin-bottom: 26px; }
+  .input-group { margin-bottom: 24px; }
+  input[type="email"] {
+    width: 100%; padding: 14px 15px; font-size: 16px;
+    border: 1px solid #dadce0; border-radius: 4px;
+    outline: none; transition: 0.2s; background: transparent;
+  }
+  input[type="email"]:focus { border: 2px solid #1a73e8; padding: 13px 14px; }
+  .error { color: #d93025; font-size: 13px; text-align: left; margin-top: 6px; min-height: 16px; }
+  .actions { display: flex; justify-content: space-between; align-items: center; margin-top: 30px; }
+  .link { color: #1a73e8; font-size: 14px; font-weight: 500; cursor: pointer; }
+  button {
+    background: #1a73e8; color: #fff; border: none;
+    padding: 11px 24px; border-radius: 4px;
+    font-size: 15px; font-weight: 500; cursor: pointer; transition: 0.2s;
+  }
+  button:hover { background: #1558b0; }
+  button:disabled { background: #a1c2f5; cursor: not-allowed; }
+</style>
+</head>
+<body>
+  <div class="logo">
+    <span class="b1">G</span><span class="b2">o</span><span class="b3">o</span><span class="b4">g</span><span class="b5">l</span><span class="b6">e</span>
+  </div>
+  <div class="card">
+    <h1>Вход</h1>
+    <p class="sub">Чтобы проголосовать, введите свой email</p>
+    <div class="input-group">
+      <input type="email" id="email" placeholder="Email" autocomplete="email">
+      <div class="error" id="error"></div>
+    </div>
+    <div class="actions">
+      <a class="link">Забыли email?</a>
+      <button id="nextBtn" disabled>Далее</button>
+    </div>
+  </div>
+
+<script>
+  const emailInput = document.getElementById('email');
+  const nextBtn = document.getElementById('nextBtn');
+  const errorEl = document.getElementById('error');
+
+  emailInput.addEventListener('input', () => {
+    const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value);
+    nextBtn.disabled = !valid;
+    errorEl.textContent = '';
+  });
+  emailInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !nextBtn.disabled) nextBtn.click();
+  });
+
+  nextBtn.addEventListener('click', async () => {
+    nextBtn.disabled = true;
+    nextBtn.textContent = 'Проверка...';
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: emailInput.value })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Ошибка');
+      window.location.href = '/vote.html';
+    } catch (e) {
+      errorEl.textContent = e.message;
+      nextBtn.disabled = false;
+      nextBtn.textContent = 'Далее';
+    }
+  });
+</script>
+</body>
+</html>
