@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Роналду vs Месси</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    min-height: 100vh; display: flex;
+    justify-content: center; align-items: center;
+    color: #fff; padding: 15px;
+  }
+  .container {
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(10px); border-radius: 20px;
+    padding: 25px 20px; width: 100%; max-width: 600px;
+    text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+  h1 { margin-bottom: 10px; font-size: 22px; }
+  .user { font-size: 12px; opacity: 0.6; margin-bottom: 20px; word-break: break-all; }
+  .players { display: flex; flex-direction: column; gap: 15px; margin-bottom: 22px; }
+  @media(min-width: 500px) {
+    .players { flex-direction: row; gap: 20px; }
+  }
+  .player {
+    flex: 1; padding: 22px 18px; border-radius: 15px;
+    cursor: pointer; transition: all 0.3s;
+    border: 2px solid transparent;
+  }
+  .player.ronaldo { background: linear-gradient(135deg, #c8102e, #7a0a1c); }
+  .player.messi { background: linear-gradient(135deg, #75aadb, #4a6fa5); }
+  .player.selected { border-color: #ffd700; box-shadow: 0 0 25px #ffd700; }
+  .player h2 { font-size: 20px; margin-bottom: 8px; }
+  .player .votes { font-size: 34px; font-weight: bold; }
+  .player .label { font-size: 12px; opacity: 0.8; }
+  button {
+    width: 100%; padding: 15px; border-radius: 10px; border: none;
+    background: linear-gradient(135deg, #ffd700, #ff8c00);
+    color: #000; font-size: 17px; font-weight: bold;
+    cursor: pointer; transition: 0.3s;
+  }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .message { margin-top: 15px; font-size: 14px; min-height: 20px; }
+  .success { color: #4ade80; } .error { color: #f87171; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>⚽ Кто лучше? ⚽</h1>
+  <div class="user" id="userEmail"></div>
+  <div class="players">
+    <div class="player ronaldo" data-vote="ronaldo">
+      <h2>🇵🇹 Роналду</h2>
+      <div class="votes" id="ronaldoVotes">–</div>
+      <div class="label">голосов</div>
+    </div>
+    <div class="player messi" data-vote="messi">
+      <h2>🇦🇷 Месси</h2>
+      <div class="votes" id="messiVotes">–</div>
+      <div class="label">голосов</div>
+    </div>
+  </div>
+  <button id="submitBtn" disabled>Подтвердить голос</button>
+  <div class="message" id="message"></div>
+</div>
+
+<script>
+  let selected = null;
+  const submitBtn = document.getElementById('submitBtn');
+  const message = document.getElementById('message');
+
+  const cookies = Object.fromEntries(
+    document.cookie.split('; ').filter(Boolean).map(c => c.split('='))
+  );
+  const myEmail = cookies.voter_email ? decodeURIComponent(cookies.voter_email) : null;
+
+  if (!myEmail) window.location.href = '/';
+  else document.getElementById('userEmail').textContent = 'Вы вошли как: ' + myEmail;
+
+  async function loadVotes() {
+    const res = await fetch('/api/votes');
+    const v = await res.json();
+    document.getElementById('ronaldoVotes').textContent = v.ronaldo;
+    document.getElementById('messiVotes').textContent = v.messi;
+  }
+  loadVotes();
+
+  document.querySelectorAll('.player').forEach(el => {
+    el.addEventListener('click', () => {
+      document.querySelectorAll('.player').forEach(p => p.classList.remove('selected'));
+      el.classList.add('selected');
+      selected = el.dataset.vote;
+      submitBtn.disabled = false;
+    });
+  });
+
+  submitBtn.addEventListener('click', async () => {
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Отправка...';
+    try {
+      const res = await fetch('/api/vote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ vote: selected })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Ошибка');
+      document.getElementById('ronaldoVotes').textContent = data.votes.ronaldo;
+      document.getElementById('messiVotes').textContent = data.votes.messi;
+      message.textContent = '✅ Ваш голос принят!';
+      message.className = 'message success';
+      submitBtn.textContent = 'Голос принят';
+      setTimeout(() => window.location.href = '/', 2500);
+    } catch (e) {
+      message.textContent = '❌ ' + e.message;
+      message.className = 'message error';
+      submitBtn.textContent = 'Подтвердить голос';
+    }
+  });
+</script>
+</body>
+</html>
