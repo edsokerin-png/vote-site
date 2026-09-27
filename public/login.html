@@ -3,73 +3,233 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
 <title>Вход — Голосование</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: 'Roboto', Arial, sans-serif;
-    background: #fff; min-height: 100vh;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    color: #202124; padding: 20px;
+  /* ============ ЦВЕТОВЫЕ ПЕРЕМЕННЫЕ ============ */
+  :root {
+    --bg:            #ffffff;
+    --card-bg:       #ffffff;
+    --card-border:   #dadce0;
+    --text:          #202124;
+    --text-muted:    #5f6368;
+    --input-bg:      #ffffff;
+    --input-border:  #dadce0;
+    --input-text:    #202124;
+    --input-placeholder: #5f6368;
+    --focus-border:  #1a73e8;
+    --btn-bg:        #1a73e8;
+    --btn-text:      #ffffff;
+    --btn-bg-hover:  #1558b0;
+    --btn-disabled:  #a1c2f5;
+    --link:          #1a73e8;
+    --error:         #d93025;
+    --shadow:        rgba(0, 0, 0, 0.08);
   }
-  .logo { font-size: 26px; font-weight: 500; margin-bottom: 20px; letter-spacing: -1px; }
+
+  /* ============ ТЁМНАЯ ТЕМА (системная) ============ */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:            #202124;
+      --card-bg:       #202124;
+      --card-border:   #5f6368;
+      --text:          #e8eaed;
+      --text-muted:    #9aa0a6;
+      --input-bg:      #202124;
+      --input-border:  #5f6368;
+      --input-text:    #e8eaed;
+      --input-placeholder: #9aa0a6;
+      --focus-border:  #8ab4f8;
+      --btn-bg:        #8ab4f8;
+      --btn-text:      #202124;
+      --btn-bg-hover:  #aecbfa;
+      --btn-disabled:  #3c4043;
+      --link:          #8ab4f8;
+      --error:         #f28b82;
+      --shadow:        rgba(0, 0, 0, 0.6);
+    }
+  }
+
+  /* ============ БАЗА ============ */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    transition: background 0.2s, color 0.2s;
+  }
+
+  body {
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  /* ============ ЛОГО ============ */
+  .logo {
+    font-size: 26px;
+    font-weight: 500;
+    margin-bottom: 20px;
+    letter-spacing: -1px;
+  }
   .logo .b1 { color: #4285f4; } .logo .b2 { color: #ea4335; }
   .logo .b3 { color: #fbbc05; } .logo .b4 { color: #4285f4; }
   .logo .b5 { color: #34a853; } .logo .b6 { color: #ea4335; }
+
+  /* ============ КАРТОЧКА ============ */
   .card {
-    width: 100%; max-width: 448px;
-    border: 1px solid #dadce0; border-radius: 8px;
-    padding: 36px 24px; text-align: center;
+    width: 100%;
+    max-width: 448px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 36px 24px;
+    text-align: center;
+    transition: background 0.2s, border-color 0.2s;
   }
-  .card h1 { font-size: 22px; font-weight: 400; margin-bottom: 10px; }
-  .card p.sub { font-size: 15px; margin-bottom: 26px; }
+  .card h1 {
+    font-size: 22px;
+    font-weight: 400;
+    margin-bottom: 10px;
+    color: var(--text);
+  }
+  .card p.sub {
+    font-size: 15px;
+    margin-bottom: 26px;
+    color: var(--text);
+  }
+
+  /* ============ ПОЛЕ ВВОДА ============ */
   .input-group { margin-bottom: 24px; }
+
   input[type="email"] {
-    width: 100%; padding: 14px 15px; font-size: 16px;
-    border: 1px solid #dadce0; border-radius: 4px;
-    outline: none; transition: 0.2s; background: transparent;
+    width: 100%;
+    padding: 14px 15px;
+    font-size: 16px;
+    background: var(--input-bg);
+    color: var(--input-text);
+    border: 1px solid var(--input-border);
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s, padding 0.1s;
   }
-  input[type="email"]:focus { border: 2px solid #1a73e8; padding: 13px 14px; }
-  .error { color: #d93025; font-size: 13px; text-align: left; margin-top: 6px; min-height: 16px; }
-  .actions { display: flex; justify-content: space-between; align-items: center; margin-top: 30px; }
-  .link { color: #1a73e8; font-size: 14px; font-weight: 500; cursor: pointer; }
-  button {
-    background: #1a73e8; color: #fff; border: none;
-    padding: 11px 24px; border-radius: 4px;
-    font-size: 15px; font-weight: 500; cursor: pointer; transition: 0.2s;
+  input[type="email"]::placeholder {
+    color: var(--input-placeholder);
   }
-  button:hover { background: #1558b0; }
-  button:disabled { background: #a1c2f5; cursor: not-allowed; }
+  input[type="email"]:focus {
+    border: 2px solid var(--focus-border);
+    padding: 13px 14px;
+  }
+
+  .error {
+    color: var(--error);
+    font-size: 13px;
+    text-align: left;
+    margin-top: 6px;
+    min-height: 16px;
+  }
+
+  /* ============ КНОПКИ И ССЫЛКИ ============ */
+  .actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 30px;
+  }
+  .link {
+    color: var(--link);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: inherit;
+  }
+  .link:hover { text-decoration: underline; }
+
+  button.primary {
+    background: var(--btn-bg);
+    color: var(--btn-text);
+    border: none;
+    padding: 11px 24px;
+    border-radius: 4px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  button.primary:hover:not(:disabled) { background: var(--btn-bg-hover); }
+  button.primary:disabled {
+    background: var(--btn-disabled);
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+
+  /* ============ ПОДПИСЬ СНИЗУ ============ */
+  .theme-hint {
+    position: fixed;
+    bottom: 12px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-muted);
+    opacity: 0.6;
+  }
 </style>
 </head>
 <body>
+
   <div class="logo">
     <span class="b1">G</span><span class="b2">o</span><span class="b3">o</span><span class="b4">g</span><span class="b5">l</span><span class="b6">e</span>
   </div>
+
   <div class="card">
     <h1>Вход</h1>
     <p class="sub">Чтобы проголосовать, введите свой email</p>
+
     <div class="input-group">
       <input type="email" id="email" placeholder="Email" autocomplete="email">
       <div class="error" id="error"></div>
     </div>
+
     <div class="actions">
-      <a class="link">Забыли email?</a>
-      <button id="nextBtn" disabled>Далее</button>
+      <button class="link" type="button">Забыли email?</button>
+      <button class="primary" id="nextBtn" disabled>Далее</button>
     </div>
   </div>
+
+  <div class="theme-hint" id="themeHint"></div>
 
 <script>
   const emailInput = document.getElementById('email');
   const nextBtn = document.getElementById('nextBtn');
   const errorEl = document.getElementById('error');
+  const themeHint = document.getElementById('themeHint');
 
+  // Показываем текущую тему (для наглядности, можно убрать)
+  function updateThemeHint() {
+    const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    themeHint.textContent = dark ? 'Тёмная тема (системная)' : 'Светлая тема (системная)';
+  }
+  updateThemeHint();
+
+  // Реагируем на смену темы в системе в реальном времени
+  window.matchMedia('(prefers-color-scheme: dark)')
+    .addEventListener('change', updateThemeHint);
+
+  // ============ ЛОГИКА ВХОДА ============
   emailInput.addEventListener('input', () => {
     const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value);
     nextBtn.disabled = !valid;
     errorEl.textContent = '';
   });
+
   emailInput.addEventListener('keydown', e => {
     if (e.key === 'Enter' && !nextBtn.disabled) nextBtn.click();
   });
