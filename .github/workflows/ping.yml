@@ -1,0 +1,16 @@
+name: Ping Render site
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping endpoint
+        run: |
+          echo "Pinging at $(date)"
+          curl -sS -m 90 -o /dev/null -w "HTTP %{http_code} за %{time_total}s\n" \
+            https://site-cltr.onrender.com/ping
